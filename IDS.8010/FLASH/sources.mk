@@ -61,5 +61,4 @@ OBJS_OS_FORMAT :=
 SUBDIRS := \
 Sources \
 Project_Settings/Startup_Code \
-Project_Headers \
 
