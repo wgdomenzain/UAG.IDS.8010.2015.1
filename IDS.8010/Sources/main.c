@@ -12,7 +12,7 @@
  * D7 = D7
  * B0 = ENABLE
  * B1 = RS
- * 
+ * a
  * keyboard
  * E0 = Clock
  * E1 = Data
