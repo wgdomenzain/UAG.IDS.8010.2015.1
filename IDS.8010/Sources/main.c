@@ -1,221 +1,191 @@
 
- 
 #include "derivative.h" /* include peripheral declarations */
  
- 
-#define GPIO_PIN_MASK 0x1Fu
-#define GPIO_PIN(x) (((1)<<(x & GPIO_PIN_MASK)))
- 
-#define nBit0   0x01    //'00000001'
-#define nBit1   0x02    //'00000010'
-#define nBit2   0x04    //'00000100'
-#define nBit3   0x08    //'00001000'
-#define nBit4   0x10    //'00010000'
-#define nBit5   0x20    //'00100000'
-#define nBit6   0x40    //'01000000'
-#define nBit7   0x80    //'10000000'
- 
-//Time definitions
-#define nt15_msec   3500
-#define nt40_usec   35
- 
-//LCD Control
+#define nt15_msec   16200
+#define nt40_usec   1600
+#define segundos 1600
 #define nIns    0
 #define nData   1
+#define Port_LCD GPIOD_PDOR
  
-#define PortLCD     GPIOD_PDOR
-//Enable connected to portb_01
+int dife = 1;
+int canto = 0;
+
 #define Enable_1    GPIOB_PDOR |= 0x01
 #define Enable_0    GPIOB_PDOR &= 0xFE
 #define RS_1        GPIOB_PDOR |= 0x02
 #define RS_0        GPIOB_PDOR &= 0xFD
- 
- 
- 
- 
-#define Set_GPIOB_PDOR(x)   (GPIOB_PDOR |= (1 << (x-1)))
- 
-int int_Temp;
- 
-//Cursor Blink off initialization
-const unsigned char InitializeLCD[5] = {0x38, 0x38, 0x38, 0x0C, 0x01};
-//--------------------------------------------------------------
-//Declare Prototypes
-/* Functions */
+#define ReadBitPortE(x) ((GPIOE_PDIR >> x) & 0x00000001)
+#define ECLOCK ReadBitPortE(0)
+#define EDATA ReadBitPortE(1)
 void cfgPorts(void);
 void initLCD(void);
 void delay(long time);
-void sendCode(int Code, int Data);
+void sendCode(int code, int data);
+void initRTC(void);
+void cfgClock(void);
+int count(int x);
+void iniTimer(void);
+void printNum(int x, int y);
  
-/*@description: Initial Port Cfg 
-*/
-             
-int main(void)
-{
-	int counter = 0;
-	
-    //Configure ports
-    cfgPorts();
-    //Initialize LCD
+int main(void) {
+	cfgPorts();
     initLCD();
-    //Set position to print character
-    sendCode(nIns, 0x85);
-    sendCode(nIns, 0x85);
-    //Print character
-    delay(nt40_usec);
-    sendCode(nData, 'L');
-    delay(nt40_usec);
-    sendCode(nData, 'U');
-    delay(nt40_usec);
-    sendCode(nData, 'P');
-    delay(nt40_usec);
-    sendCode(nData, 'I');
-    delay(nt40_usec);
-    sendCode(nData, 'T');
-    delay(nt40_usec);
-    sendCode(nData, 'A');
+    iniTimer();
     sendCode(nIns, 0x80);
-     
- 
-    for(;;)
-    {/* The logic for the buttons works if a pull-down 
-        resistor is used */
-         
-        if ((GPIOC_PDIR && 0x0F) == 0x00)
-        {// No button is pressed
-            //do noting
-        }
-        else if ((GPIOC_PDIR && 0x0F) == 0x01)
-        {// Button 1 has been pressed
-            sendCode(nData, '1');
-        }
-        else if ((GPIOC_PDIR && 0x0F) == 0x02)
-        {// Button 2 has been pressed
-            sendCode(nData, '2');
-        }
-        else if ((GPIOC_PDIR && 0x0F) == 0x04) 
-        {// Button 3 has been pressed
-            sendCode(nData, '3');
-        }
-        else if ((GPIOC_PDIR && 0x0F) == 0x08) 
-        {// Button 4 has been pressed
-            sendCode(nData, '4');   
-        }
-        else if ((GPIOC_PDIR && 0x0F) == 0x03) 
-        {// Buttons 1&2 have been pressed
-             
-        }
-        else if ((GPIOC_PDIR && 0x0F) == 0x07) 
-        {// Buttons 1&2&3 have been pressed
-             
-        }
-        else if ((GPIOC_PDIR && 0x0F) == 0x0F) 
-        {// Buttons 1&2&3&4 have been pressed
-             
-        }
-  
+    sendCode(nIns, 0x80);
+    for (;;) {
     }
-     
+ 
     return 0;
 }
  
-void cfgPorts(void)
-{
-    //Turn on clock for portb
-    SIM_SCGC5 = SIM_SCGC5_PORTB_MASK;   
-    //Turn on clock for portd
-    SIM_SCGC5 |= SIM_SCGC5_PORTD_MASK;  
-    ////Turn on clock for portc
-    SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
-     
-    /* Set pins of PORTB as GPIO */
-    PORTB_PCR0= PORT_PCR_MUX(1);
-    PORTB_PCR1= PORT_PCR_MUX(1);
-    PORTB_PCR2=(0|PORT_PCR_MUX(1));
-    PORTB_PCR3=(0|PORT_PCR_MUX(1));
-    PORTB_PCR4=(0|PORT_PCR_MUX(1));
-    PORTB_PCR5=(0|PORT_PCR_MUX(1));
-    PORTB_PCR6=(0|PORT_PCR_MUX(1));
-    PORTB_PCR7=(0|PORT_PCR_MUX(1));
-     
-    /* Set pins of PORTC as GPIO */
-    PORTC_PCR0= PORT_PCR_MUX(1);
-    PORTC_PCR1= PORT_PCR_MUX(1);
-    PORTC_PCR2= PORT_PCR_MUX(1);
-    PORTC_PCR3= PORT_PCR_MUX(1);
-     
-    /* Set pins of PORTD as GPIO */
-    PORTD_PCR0= PORT_PCR_MUX(1);
-    PORTD_PCR1= PORT_PCR_MUX(1);
-    PORTD_PCR2=(0|PORT_PCR_MUX(1));
-    PORTD_PCR3=(0|PORT_PCR_MUX(1));
-    PORTD_PCR4=(0|PORT_PCR_MUX(1));
-    PORTD_PCR5=(0|PORT_PCR_MUX(1));
-    PORTD_PCR6=(0|PORT_PCR_MUX(1));
-    PORTD_PCR7=(0|PORT_PCR_MUX(1));
-     
-    //Initialize PortB
-    GPIOB_PDOR = 0x00;
-     
-    //Initialize PortD 
-    GPIOD_PDOR = 0x00;
+ void initLCD(void) {
  
-    //Configure PortB as outputs
+    sendCode(nIns, 0x38);
+    sendCode(nIns, 0x38);
+    sendCode(nIns, 0x38);
+    sendCode(nIns, 0x0C);
+    sendCode(nIns, 0x01);
+}
+ 
+void cfgPorts(void) {
+ 
+    //Turn on clock for portb
+    SIM_SCGC5 = SIM_SCGC5_PORTB_MASK;
+    SIM_SCGC5 |= SIM_SCGC5_PORTD_MASK;
+    SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK;
+    SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
+    SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
+ 
+    
+    //PORT B
+    PORTB_PCR0 = PORT_PCR_MUX(1);
+    PORTB_PCR1 = PORT_PCR_MUX(1);
+    PORTB_PCR2 = PORT_PCR_MUX(1);
+ 
+    //PORT E
+    PORTE_PCR0 = PORT_PCR_MUX(1);
+    PORTE_PCR1 = PORT_PCR_MUX(1);
+ 
+    //PORT D
+    PORTD_PCR0 = PORT_PCR_MUX(1);
+    PORTD_PCR1 = PORT_PCR_MUX(1);
+    PORTD_PCR2 = PORT_PCR_MUX(1);
+    PORTD_PCR3 = PORT_PCR_MUX(1);
+    PORTD_PCR4 = PORT_PCR_MUX(1);
+    PORTD_PCR5 = PORT_PCR_MUX(1);
+    PORTD_PCR6 = PORT_PCR_MUX(1);
+    PORTD_PCR7 = PORT_PCR_MUX(1);
+ 
+    //Portc
+    
+    PORTC_PCR1 |= PORT_PCR_MUX(1);
+    PORTC_PCR3 |= PORT_PCR_MUX(5);
+ 
+    //Initialize PortB and PortD and PortE
+    GPIOB_PDOR = 0x00;
+    GPIOD_PDOR = 0x00;
+    GPIOE_PDOR = 0x00;
+ 
+    //Configure Port as outputs input 0, output 1  
+    GPIOD_PDDR = 0xFFFF;
     GPIOB_PDDR = 0xFF;
-     
-    //Configure PortD as outputs
-    GPIOD_PDDR = 0xFF;
-     
-    //Configure PortC as inputs
+    GPIOE_PDDR = 0xF0;
     GPIOC_PDDR = 0x00;
 }
- 
-void initLCD(void)
-{
-    int i;
-    delay(nt15_msec);
-     
-    /* Send initialization instructions */
-    /* Loop for sending each character from the array */
-    for(i=0;i<5;i++)
-    {                                       
-        sendCode(nIns, InitializeLCD[i]);   /* send initialization instructions */         
+void delay(long time) {
+    while (time > 0) {
+        time--;
     }
-     
 }
  
-void sendCode(int Code, int Data)
-{
-    //Assign a value to pin RS
-    /*HINT: When RS is 1, then the LCD receives a data
-    when RS is 0, then the LCD receives an instruction */
-    // Initialize RS and Enable with 0
+void sendCode(int code, int data) {
     RS_0;
     Enable_0;
-    //Assign the value we want to send to the LCD
-    PortLCD = Data; 
-     
-    //We make the algorithm to establish if its an instruction we start with 0 on RS value, otherwise if its a data command we start with RS as 1;
-    if (Code == nIns)
-    {
+    Port_LCD = data;
+    if (code == nIns) {
         Enable_1;
         delay(nt40_usec);
         Enable_0;
-        RS_0;
-    }       
-    else if(Code == nData)
-    {
+    }
+ 
+    if (code == nData) {
         RS_1;
         Enable_1;
         delay(nt40_usec);
         Enable_0;
-        RS_0;
     }
 }
-void delay(long time)
-{
-    while (time > 0)
-    {
-        time--;
+ 
+ 
+
+ 
+void iniTimer(void){
+     // turn on PIT
+    PIT_MCR = PIT_MCR_FRZ_MASK;    
+    // Timer 1
+    PIT_LDVAL1 = 0x122870;
+    PIT_TCTRL1 = PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
+     
+    NVIC_ICPR |= 1 << ((INT_PIT - 16) % 32);
+ 
+    NVIC_ISER |= 1 << ((INT_PIT - 16) % 32);
+}
+ 
+void PIT_IRQHandler(void){
+	int cant = 0;
+    dife++;
+    if(dife == 10){
+    	dife = 0;
+    	canto++;
+    }
+	cant = count(canto);
+	sendCode(nIns, 0x80);
+	if(cant == 0){
+		sendCode(nData, '0');
+	} else {
+		printNum(cant, canto);
+	}
+	sendCode(nData, '.');
+	cant = count(dife);
+	if(cant == 0){
+		sendCode(nData, '0');
+	} else {
+		printNum(cant, dife);
+	}
+	GPIOB_PTOR = 0x4;
+    PIT_TFLG1 |= PIT_TFLG_TIF_MASK;     // Clear the timer interrupt flag
+ 
+    PIT_TCTRL1 |= PIT_TCTRL_TEN_MASK | PIT_TCTRL_TIE_MASK;
+}
+ 
+int count(int x){
+    int res = 0;
+     while (x > 0) {
+     res++;
+     x /= 10;
+    }
+    return res;
+}
+ 
+void printNum(int x, int y){
+    char numero[x];
+    int pos = 0;
+    int digit = 0;
+    int z = 0;
+    if(x == 1){
+        numero[pos] = (char)(((int)'0')+y);
+        sendCode(nData, numero[0]);
+    } else {
+        while(y > 0){
+            digit = y % 10;
+            numero[pos] = (char)(((int)'0')+digit);
+            pos++;
+            y /= 10;
+        }
+        for(z = x-1; z > -1; z--){
+            sendCode(nData, numero[z]);
+        }
     }
 }
