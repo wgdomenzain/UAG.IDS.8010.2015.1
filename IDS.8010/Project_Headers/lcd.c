@@ -7,10 +7,14 @@ void cfgPortsLCD(void)
     //Turn on clock for portD and portB 
 	SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
 	SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
+	SIM_SCGC5 |= SIM_SCGC5_PORTD_MASK;
     //Also, we can use predefined masks created by freescale, such as: 
     //SIM_SCGC5_PORTB_MASK; 
-      
-    /* Set pins of PORTD as GPIO */
+    
+	/* Set pins of PORTD as GPIO */
+	PORTD_PCR0=(PORT_PCR_MUX(1)); 	//LED
+	
+    /* Set pins of PORTC as GPIO */
 		
     PORTC_PCR0=(PORT_PCR_MUX(1)); 	//D0
     PORTC_PCR1=(PORT_PCR_MUX(1));	//D1
@@ -26,10 +30,14 @@ void cfgPortsLCD(void)
    
       
     //Reasure first PortB and PortD value 
-    GPIOC_PDOR = 0x00;
+    GPIOC_PDOR = 0x000;
  
+    //Reasure first PortD value 
+        GPIOD_PDOR = 0x000;
     //Configure PortC as outputs 
     GPIOC_PDDR |= 0xFFF;
+    //Configure PortD as outputs 
+       GPIOD_PDDR |= 0xFFF;
    
 	initLCD();
 } 
@@ -124,3 +132,13 @@ void printvarxy_lcd(int x,int y,int data)
 	 delay(ntime_15msec);
 	
 }
+
+void RTC(int multi)
+		{
+			GPIOD_PDOR=0x000;
+			delay(120000);
+			GPIOD_PDOR=0x001;
+			delay(120000);
+		}
+
+

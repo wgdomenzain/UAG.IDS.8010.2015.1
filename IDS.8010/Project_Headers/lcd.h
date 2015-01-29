@@ -12,18 +12,15 @@
 #define ntime_15msec    3500
 #define ntime_10usec    12
 #define ntime_40usec    48  
-
+#define ntime_100ms     240000
 void cfgPortsLCD(void); //configuracion de puertos de la LCD
 void delay(long time);  //retardo necesario para el control de la LCD
 void initLCD(void); //sintaxis de inicializacion del LCD
-void print_lcd(char Code, char Data); //sintaxis de envio de datos 0 => instruccion, 
-                                      //                           1 => dato
-int x,i; //contadores
-
-
+void print_lcd(char Code, char Data); //sintaxis de envio de datos 0 => instruccion,1 => dato
+int x,i,unit; //contadores
 void printstr_lcd(char str[16]);
 void clrscr(void);
 void printvarxy_lcd(int x,int y,int data);
 void lcd_gotoxy(int x,int y);
-
+void RTC(int multi);
 #endif /* lcd_H_ */
