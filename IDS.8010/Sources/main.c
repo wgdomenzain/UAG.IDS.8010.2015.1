@@ -25,6 +25,10 @@ include peripheral declarations
 #define PortEnable_0  GPIOB_PDOR &= 0xFE
 #define PortRS_1  GPIOB_PDOR |= 0x02
 #define PortRS_0  GPIOB_PDOR &= 0xFD
+//Macros del boton
+#define	PULSE_INPUT		( 2 )
+#define	PULSE_IN_PORT	( GPIOB_PDIR )
+
 
 void configurarPuertos(void);
 void initLCD(void);
@@ -32,24 +36,78 @@ void delay(long time);
 void sendCode(int code, int data);
 void clear(void);
 void caracter(char arreglo[]);
-
-
+void vfnPulseInInit(void);
+unsigned char bfnGetPulseMeas(void);
+// VARIABLES GLOBALES
+unsigned char bPulseWidth = 0;
 
 int main(void)
 {
 configurarPuertos();
 initLCD();
 clear();
+vfnPulseInInit();
 
-sendCode(nInst, 0x85);
-sendCode(nData, 'K');
-sendCode(nData, 'A');
-sendCode(nData, 'R');
-sendCode(nData, 'L');
-sendCode(nData, 'A');
 
-		for(;;) {
-	  }
+		for(;;) 
+		{
+			//LLama a la funcion donde se va a contar los pulsos de boton 
+			bfnGetPulseMeas();
+			//Compara el contador que se llama dwpulseWidth si es igual a 1 muestra el primer mensaje 
+			if(bPulseWidth==1)
+			{
+				
+				sendCode(nInst, 0x85);
+				sendCode(nData, 'K');
+				sendCode(nData, 'A');
+				sendCode(nData, 'R');
+				sendCode(nData, 'L');
+				sendCode(nData, 'A');
+			}
+			 else if(bPulseWidth==2)
+			 {
+				 clear();
+				 sendCode(nInst, 0x85);
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'N');
+				 sendCode(nData, 'G');
+				 sendCode(nData, 'B');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'O');
+				 sendCode(nData, 'M');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'D');
+			 }
+			 else if(bPulseWidth==3)
+			 {
+				 clear();
+				 sendCode(nInst, 0x85);
+				 sendCode(nData, '21');
+				 sendCode(nData, 'A');
+				 sendCode(nData, 'N');
+				 sendCode(nData, 'U');
+				 sendCode(nData, 'S');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'N');
+				 sendCode(nData, 'E');
+				 sendCode(nData, '26');
+				 sendCode(nData, '94');
+			 } 
+			 else if (bPulseWidth==4)
+			 {
+				 clear();
+				 sendCode(nInst, 0x85);
+				 sendCode(nData, '7');
+				 sendCode(nData, 'M');
+				 sendCode(nData, 'O');
+				 sendCode(nData, 'C');
+				 sendCode(nData, 'U');
+				 sendCode(nData, 'A');
+				 sendCode(nData, 'T');
+				 sendCode(nData, 'R');
+				 sendCode(nData, 'I');
+			 }
+		}
 	return 0;
 }
 
@@ -76,6 +134,9 @@ SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
 //PORT B
 PORTB_PCR0 = PORT_PCR_MUX(1);     //E
 PORTB_PCR1 = PORT_PCR_MUX(1);     //RS
+
+//Button
+PORTB_PCR2 = PORT_PCR_MUX(1);    //b
 	
 
 //PORT C
@@ -90,7 +151,7 @@ PORTC_PCR7 = PORT_PCR_MUX(1);
 	
 	
 
-//Initialize PortB and PortD
+//Initialize PortB and Portc
 GPIOB_PDOR = 0x00;
 GPIOC_PDOR = 0x00;
 		
@@ -99,6 +160,7 @@ GPIOB_PDDR = 0xFF;
 GPIOC_PDDR = 0xFFFF;
 
 }
+
 
 
 void initLCD(void){
@@ -145,8 +207,25 @@ void sendCode(int code, int PortData)
 	}
 }
 
-
-
 void clear(void){
 	sendCode(nInst, 0x01);
 }
+
+void vfnPulseInInit(void)
+{
+	SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
+	GPIOB_PDDR &= ~( 1 << PULSE_INPUT );
+	PORTB_PCR2 |= PORT_PCR_MUX(1) | PORT_PCR_PS_MASK | PORT_PCR_PE_MASK;	
+}
+
+unsigned char bfnGetPulseMeas(void)
+{
+	while (( PULSE_IN_PORT & ( 1 << PULSE_INPUT)) );
+		while (( PULSE_IN_PORT & ( 1 << PULSE_INPUT) ));
+		do
+		{
+			bPulseWidth++;
+		}while ( PULSE_IN_PORT & ( 1 << PULSE_INPUT) );
+		return ( bPulseWidth );
+}
+
