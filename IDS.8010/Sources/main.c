@@ -27,11 +27,13 @@
  
 int dife = 1;
 int canto = 0;
+int estado = 0;
 //Enable connected to portb_01
 #define Enable_1    GPIOB_PDOR |= 0x01
 #define Enable_0    GPIOB_PDOR &= 0xFE
 #define RS_1        GPIOB_PDOR |= 0x02
 #define RS_0        GPIOB_PDOR &= 0xFD
+#define readBitB(x)  (((GPIOB_PDIR) >> x) & 0x01) 
 #define ReadBitPortE(x) ((GPIOE_PDIR >> x) & 0x00000001)
 #define ECLOCK ReadBitPortE(0)
 #define EDATA ReadBitPortE(1)
@@ -54,6 +56,29 @@ int main(void) {
     sendCode(nIns, 0x80);
     sendCode(nIns, 0x80);
     for (;;) {
+    	if(readBitB(2) == 0){
+			delay(262000);
+			if(readBitB(2) == 0){
+				sendCode(nIns, 0x01);
+				estado++;
+				dife = 0;
+				canto = 0;
+				switch(estado){
+				case 1: PIT_LDVAL1 = 0x48A1C * 2;
+					break;
+				case 2: PIT_LDVAL1 = 0x48A1C * 4;
+					break;
+				case 3: PIT_LDVAL1 = 0x48A1C * 10;
+					break;
+				case 4: PIT_LDVAL1 = 0x48A1C * 20;
+					break;
+				}
+				if(estado == 5){
+					estado = 0;
+					PIT_LDVAL1 = 0x48A1C;
+				}
+			}
+		}
     }
  
     return 0;
@@ -107,7 +132,7 @@ void configurarPuertos(void) {
  
     //Configure Port as outputs input 0, output 1  
     GPIOD_PDDR = 0xFFFF;
-    GPIOB_PDDR = 0xFF;
+    GPIOB_PDDR = 0xFB;
     GPIOE_PDDR = 0xF0;
     GPIOC_PDDR = 0x00;
 }
@@ -219,7 +244,7 @@ void iniTimer(void){
      // turn on PIT
     PIT_MCR = PIT_MCR_FRZ_MASK;    
     // Timer 1
-    PIT_LDVAL1 = 0x122870;
+    PIT_LDVAL1 = 0x48A1C;
     PIT_TCTRL1 = PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
      
     NVIC_ICPR |= 1 << ((INT_PIT - 16) % 32);
@@ -229,10 +254,42 @@ void iniTimer(void){
  
 void PIT_IRQHandler(void){
 	int cant = 0;
-    dife++;
-    if(dife == 10){
-    	dife = 0;
-    	canto++;
+    switch(estado){
+    	case 0: 
+    		dife += 25;
+    		if(dife >= 1000){
+				dife = 0;
+				canto++;
+			}
+    		break;
+    	case 1:
+    		dife += 50;
+    		if(dife >= 1000){
+				dife = 0;
+				canto++;
+			}
+    		break;
+    	case 2:
+    		dife += 100;
+    		if(dife >= 1000){
+				dife = 0;
+				canto++;
+			}
+    		break;
+    	case 3:
+    		dife += 250;
+    		if(dife >= 1000){
+				dife = 0;
+				canto++;
+			}
+    		break;
+    	case 4:
+    		dife += 500;
+    		if(dife >= 1000){
+				dife = 0;
+				canto++;
+			}
+    		break;
     }
 	cant = count(canto);
 	sendCode(nIns, 0x80);
