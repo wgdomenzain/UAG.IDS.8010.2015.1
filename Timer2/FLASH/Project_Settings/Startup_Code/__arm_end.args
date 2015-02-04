@@ -4,8 +4,8 @@
 -g3
 -gdwarf-2
 -gstrict-dwarf
--I"C:/Users/Imanol/Downloads/UAG.IDS.8010.2015.1-Salvador-Brise-o/UAG.IDS.8010.2015.1-Salvador-Brise-o/IDS.8010/Project_Headers"
--I"C:/Users/Imanol/Downloads/UAG.IDS.8010.2015.1-Salvador-Brise-o/UAG.IDS.8010.2015.1-Salvador-Brise-o/IDS.8010/Project_Settings/Startup_Code"
+-I"C:/Users/Imanol/Documents/GitHub/UAG.IDS.8010.2015.1/Timer/Project_Headers"
+-I"C:/Users/Imanol/Documents/GitHub/UAG.IDS.8010.2015.1/Timer/Project_Settings/Startup_Code"
 -I"C:/Freescale/CW MCU v10.6/MCU/ARM_GCC_Support/ewl/EWL_C/include"
 -I"C:/Freescale/CW MCU v10.6/MCU/ARM_GCC_Support/ewl/EWL_Runtime/include"
 -O0
