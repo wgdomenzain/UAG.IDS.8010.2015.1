@@ -1,5 +1,3 @@
-//edgar humberto rodriguez rubio
-
 #include "derivative.h" /* include peripheral declarations */ 
 
 #define nt15_msec   16200 
@@ -26,10 +24,11 @@ void initRTC(void);
 void convertir(int numero);	
 void cfgClock(void);	
 int count(int x);	
-void iniTimer(void);	
+void iniTimer(void);
 void imprimeNum(int x, int y);
-int milis=1;	
-int segundo=1;
+int milisegundos=0;	
+int segundo=0;
+int flag=0;
 
 
 int main(void) {	
@@ -38,9 +37,17 @@ int main(void) {
 	iniTimer();	
 	cfgClock();		
 	initRTC();		
-	sendCode(nIns, 0x86);	
-	sendCode(nIns, 0x86);	
+		
+		
 	for (;;) {	
+		if(ReadBitPortE(2)==0){
+			segundo=0;
+			milisegundos=0;
+			delay(600000);
+			flag++;
+			if(flag>4)
+				flag=0;
+		}
 	}	
 
 	return 0;	
@@ -65,6 +72,7 @@ void configurarPuertos(void) {
 	//PORT E
 	PORTE_PCR0 = PORT_PCR_MUX(1);	
 	PORTE_PCR1 = PORT_PCR_MUX(1);	
+	PORTE_PCR2 = PORT_PCR_MUX(1);
 
 	//PORT D
 	PORTD_PCR0 = PORT_PCR_MUX(1);	
@@ -137,6 +145,7 @@ void cfgClock(void) {	//Configure 32 KHz output
 // Add cfg of Clock Source Select	
 //Enable internal reference clock - page 372	
 	MCG_C1 = MCG_C1_IRCLKEN_MASK;	
+	
 	//MCG_C1 |= MCG_C1 | MCG_C1_IRCLKEN_MASK;	 
 
 	//Internal Reference Clock -->Slow - page 373	
@@ -199,24 +208,67 @@ void iniTimer(void){
 	 // turn on PIT	
 	PIT_MCR = PIT_MCR_FRZ_MASK;	 	
 	// Timer 1	
-	
-	PIT_LDVAL1 = 0x122870; 	
+
 	PIT_TCTRL1 = PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;	
 	
 	NVIC_ICPR |= 1 << ((INT_PIT - 16) % 32);	
 
 	NVIC_ISER |= 1 << ((INT_PIT - 16) % 32);	
-}	
-void PIT_IRQHandler(void){	
-	sendCode(nIns, 0x84);	
-	milis++;	
-	if(milis>9){	
+}
+
+void PIT_IRQHandler(void){
+	 // turn on PIT	
+	PIT_MCR = 0;	 	
+	// Timer 1	 	
+	PIT_TCTRL1 = 0;	
+	NVIC_ICPR = 0;
+	NVIC_ISER = 0;
+
+	
+	switch(flag){
+	case 0:
+		milisegundos+=25;
+		PIT_LDVAL1 = 0x122870/4;
+	break;
+	case 1:
+	
+		milisegundos+=50;
+		PIT_LDVAL1 = 0x122870/2;
+	break;
+	case 2:
+		       
+		milisegundos+=100;
+		PIT_LDVAL1 = 0x122870;
+	break;
+	case 3:
+		
+		milisegundos+=250;
+		PIT_LDVAL1 = 0x122870*2.5;
+	break;
+	case 4:
+		
+		milisegundos+=500;
+		PIT_LDVAL1 = 0x122870*5;
+	break;
+	
+	}
+	if(milisegundos>999){	
 		segundo++;	
-		milis=0;	
+		milisegundos=0;	
 	}	
+	sendCode(nIns, 0x86);
+	sendCode(nIns, 0x86);
+	if(segundo==0){
+		sendCode(nData,'0');
+	}else{
 	convertir(segundo);	
+	}
 	sendCode(nData,'.');	
-	convertir(milis);	
+	if(milisegundos==0){
+		sendCode(nData,'0');
+	}else{
+	convertir(milisegundos);
+	}
 	GPIOB_PTOR=0x4;	
 	PIT_TFLG1 |= PIT_TFLG_TIF_MASK;     // Clear the timer interrupt flag	 
 	PIT_TCTRL1 |= PIT_TCTRL_TEN_MASK | PIT_TCTRL_TIE_MASK;	
@@ -264,7 +316,7 @@ void convertir(int numero){
 		 numero/=10;	
 		}	
 		
-		for( x = 0; x < y; x++){	
+		for( x = 0; x <y; x++){	
 			sendCode(nData, arr[x]);	
 		}	
-	}	
+	}
