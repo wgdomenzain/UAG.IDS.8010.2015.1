@@ -56,56 +56,90 @@ vfnPulseInInit();
 			//Compara el contador que se llama dwpulseWidth si es igual a 1 muestra el primer mensaje 
 			if(bPulseWidth==1)
 			{
-				
-				sendCode(nInst, 0x85);
+				clear();
+				sendCode(nInst, 0x80);
 				sendCode(nData, 'K');
 				sendCode(nData, 'A');
 				sendCode(nData, 'R');
 				sendCode(nData, 'L');
 				sendCode(nData, 'A');
+				
 			}
 			 else if(bPulseWidth==2)
 			 {
 				 clear();
-				 sendCode(nInst, 0x85);
+				 sendCode(nInst, 0x80);
 				 sendCode(nData, 'I');
 				 sendCode(nData, 'N');
 				 sendCode(nData, 'G');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'N');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'R');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'A');
+				 
+				 sendCode(nInst, 0xC0);
 				 sendCode(nData, 'B');
 				 sendCode(nData, 'I');
 				 sendCode(nData, 'O');
 				 sendCode(nData, 'M');
 				 sendCode(nData, 'E');
 				 sendCode(nData, 'D');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'C');
+				 sendCode(nData, 'A');
+				
 			 }
 			 else if(bPulseWidth==3)
 			 {
 				 clear();
 				 sendCode(nInst, 0x85);
-				 sendCode(nData, '21');
+				 sendCode(nData, '2');
+				 sendCode(nData, '1');
 				 sendCode(nData, 'A');
 				 sendCode(nData, 'N');
+				 sendCode(nData, 'I');
 				 sendCode(nData, 'U');
 				 sendCode(nData, 'S');
+				 
+				 sendCode(nInst, 0xC0);
 				 sendCode(nData, 'E');
 				 sendCode(nData, 'N');
 				 sendCode(nData, 'E');
-				 sendCode(nData, '26');
-				 sendCode(nData, '94');
+				 sendCode(nData, 'R');
+				 sendCode(nData, 'O');
+				 sendCode(nData, '2');
+				 sendCode(nData, '6');
+				 sendCode(nData, '9');
+				 sendCode(nData, '4');
 			 } 
 			 else if (bPulseWidth==4)
 			 {
 				 clear();
-				 sendCode(nInst, 0x85);
-				 sendCode(nData, '7');
+				 sendCode(nInst, 0x80);
+				 sendCode(nData, 'S');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'P');
+				 sendCode(nData, 'T');
+				 sendCode(nData, 'I');
 				 sendCode(nData, 'M');
 				 sendCode(nData, 'O');
+				 
+				 sendCode(nInst, 0xC0);
 				 sendCode(nData, 'C');
 				 sendCode(nData, 'U');
 				 sendCode(nData, 'A');
 				 sendCode(nData, 'T');
 				 sendCode(nData, 'R');
 				 sendCode(nData, 'I');
+				 sendCode(nData, 'M');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'S');
+				 sendCode(nData, 'T');
+				 sendCode(nData, 'R');
+				 sendCode(nData, 'E');
 			 }
 		}
 	return 0;
@@ -213,9 +247,8 @@ void clear(void){
 
 void vfnPulseInInit(void)
 {
-	SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
 	GPIOB_PDDR &= ~( 1 << PULSE_INPUT );
-	PORTB_PCR2 |= PORT_PCR_MUX(1) | PORT_PCR_PS_MASK | PORT_PCR_PE_MASK;	
+	PORTB_PCR2  =  PORT_PCR_MUX(1) | PORT_PCR_PE_MASK ;	
 }
 
 unsigned char bfnGetPulseMeas(void)
