@@ -2,7 +2,7 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
-#Progress monitor hint: 5
+#Progress monitor hint: 6
 first : all
 -include ../makefile.init
 
@@ -58,7 +58,7 @@ all: warning-messages explicit-dependencies IDS.8010.elf secondary-outputs
 # Tool invocations
 IDS.8010.elf: $(OBJS) $(USER_OBJS) ../Project_Settings/Linker_Files/MKL25Z128_flash.ld
 	@echo 'Building target: $@'
-	@echo 'Executing target #6 $@'
+	@echo 'Executing target #7 $@'
 	@echo 'Invoking: ARM Ltd Windows GCC C Linker'
 	"$(ARMSourceryDirEnv)/arm-none-eabi-gcc"  $(USER_OBJS_QUOTED) $(LIBS_QUOTED) @"IDS.args" -o"IDS.8010.elf"
 	@echo 'Finished building target: $@'

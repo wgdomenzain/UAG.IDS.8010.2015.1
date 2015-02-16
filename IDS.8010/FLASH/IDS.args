@@ -3,6 +3,7 @@
 "./Project_Settings/Startup_Code/__arm_end.o"
 "./Sources/sa_mtb.o"
 "./Sources/main.o"
+"./Sources/I2C.o"
 -mcpu=cortex-m0
 -mthumb
 -mfloat-abi=soft
