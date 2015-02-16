@@ -9,18 +9,18 @@ void configurarPuertos(void);
 void initLCD(void);	
 int main(void)
 {
-slave=0xA0;//esclavo
+
+	slave=0xA0;//esclavo
 dato=0x33; 
 memory=0x11;//direccion
 
 		
 	Init_I2C();
-	I2CWriteRegister(slave,memory,0x55);
+	//I2CWriteRegister(slave,memory,0x55);	
 	for (;;)
 	{
-		//IIC_StartTransmission (char SlaveID, char Mode);	
-	//result=I2CReadRegister(slave,memory);
-
+		//IIC_StartTransmission (char SlaveID, char Mode);
+		result=I2CReadRegister(slave,memory);
 	}
 	
 	

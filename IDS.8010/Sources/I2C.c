@@ -59,12 +59,12 @@ char I2CReadRegister(char SlaveID, char RegisterAddress)
   //write MWSR //Read MRSW 
   IIC_StartTransmission(SlaveID,MWSR);
   i2c_Wait();
-  i2c_write_byte(RegisterAddress>>8); 
+  i2c_write_byte(RegisterAddress); 
   i2c_Wait();
-  i2c_write_byte(RegisterAddress&0XFF); 
-  i2c_Wait();
+  //i2c_write_byte(RegisterAddress&0XFF); 
+  //i2c_Wait();
   i2c_RepeatedStart();
-  i2c_write_byte((SlaveID << 1) | 0x01);
+  i2c_write_byte((SlaveID) | 0x01);
   i2c_Wait();
   i2c_EnterRxMode();
   i2c_DisableAck(); 
@@ -106,7 +106,7 @@ char I2CReadRegister8(char SlaveID, char RegisterAddress)
   i2c_write_byte(RegisterAddress); 
   i2c_Wait();
   i2c_RepeatedStart();
-  i2c_write_byte((SlaveID << 1) | 0x01);
+  i2c_write_byte((SlaveID) | 0x01);
   i2c_Wait();
   i2c_EnterRxMode();
   i2c_DisableAck(); // Deshabilita ACK 
