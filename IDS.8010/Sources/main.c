@@ -1,262 +1,270 @@
-/*
- * main implementation: use this 'C' sample to create your own application
- *
- */
+// * main implementation: use this 'C' sample to create your own application
+// */
 
 
 //Karla Oliva
 
 
-
-#include "derivative.h" 
-/* include peripheral declarations */
-
-#define nt15_msec   16200
-#define nt40_usec   1600
-#define segundos 1600
-#define nIns	0
+#include "derivative.h" /* 
+include peripheral declarations
+ */
+//Time definitions
+#define ntime_15msec    0x02E8
+#define ntime_40usec	0x1AD0
+#define nInst	0
 #define nData	1
 
+
 //MACROS
-#define Port_LCD GPIOD_PDOR
-int dife = 1;
+#define Port_LCD GPIOC_PDOR
 
 //Enable connected to portb_01
+#define PortEnable_1  GPIOB_PDOR |= 0x01
+#define PortEnable_0  GPIOB_PDOR &= 0xFE
+#define PortRS_1  GPIOB_PDOR |= 0x02
+#define PortRS_0  GPIOB_PDOR &= 0xFD
+//Macros del boton
+#define	PULSE_INPUT		( 2 )
+#define	PULSE_IN_PORT	( GPIOB_PDIR )
 
-#define Enable_1 GPIOB_PDOR |= 0x01
-#define Enable_0 GPIOB_PDOR &= 0xFE
-#define RS_1 GPIOB_PDOR |= 0x02
-#define RS_0 GPIOB_PDOR &= 0xFD
-#define ReadBitPortE(x) ((GPIOE_PDIR >> x) & 0x00000001)
-#define ECLOCK ReadBitPortE(0)
-#define EDATA ReadBitPortE(1)
 
 void configurarPuertos(void);
 void initLCD(void);
 void delay(long time);
 void sendCode(int code, int data);
-void initRTC(void);
-void cfgClock(void);
-int count(int x);
-void iniTimer(void);
-void imprimeNum(int x, int y);
+void clear(void);
+void caracter(char arreglo[]);
+void vfnPulseInInit(void);
+unsigned char bfnGetPulseMeas(void);
+// VARIABLES GLOBALES
+unsigned char bPulseWidth = 0;
 
-
-int main(void) {
+int main(void)
+{
 configurarPuertos();
 initLCD();
-iniTimer();
-cfgClock();
-initRTC();
-sendCode(nIns, 0x84);
-sendCode(nIns, 0x84);
-	
+clear();
+vfnPulseInInit();
 
-for (;;) {
-	
+
+		for(;;) 
+		{
+			//LLama a la funcion donde se va a contar los pulsos de boton 
+			bfnGetPulseMeas();
+			//Compara el contador que se llama dwpulseWidth si es igual a 1 muestra el primer mensaje 
+			if(bPulseWidth==1)
+			{
+				clear();
+				sendCode(nInst, 0x85);
+				sendCode(nData, 'K');
+				sendCode(nData, 'A');
+				sendCode(nData, 'R');
+				sendCode(nData, 'L');
+				sendCode(nData, 'A');
+				
+				sendCode(nInst, 0xC0);
+				sendCode(nData, 'A');					 
+				sendCode(nData, 'R');
+			    sendCode(nData, 'A');
+				sendCode(nData, 'C');
+				sendCode(nData, 'E');
+			    sendCode(nData, 'L');
+				sendCode(nData, 'Y');
+				
+			}
+			 else if(bPulseWidth==2)
+			 {
+				 clear();
+				 sendCode(nInst, 0x80);
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'N');
+				 sendCode(nData, 'G');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'N');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'R');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'A');
+				 
+				 sendCode(nInst, 0xC0);
+				 sendCode(nData, 'B');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'O');
+				 sendCode(nData, 'M');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'D');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'C');
+				 sendCode(nData, 'A');
+				 				
+				 
+				 
+			 }
+			 else if(bPulseWidth==3)
+			 {
+				 clear();
+				 sendCode(nInst, 0x85);
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'N');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'R');
+				 sendCode(nData, 'O');
+				 sendCode(nData, '.');
+				 sendCode(nData, '2');
+				 sendCode(nData, '6');
+				 
+				 sendCode(nInst, 0xC0);
+				 sendCode(nData, '1');
+				 sendCode(nData, '9');
+				 sendCode(nData, '9');
+				 sendCode(nData, '4');
+		
+			 } 
+			 else if (bPulseWidth==4)
+			 {
+				 clear();
+				 sendCode(nInst, 0x80);
+				 sendCode(nData, 'S');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'P');
+				 sendCode(nData, 'T');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'M');
+				 sendCode(nData, 'O');
+				 
+				 sendCode(nInst, 0xC0);
+				 sendCode(nData, 'C');
+				 sendCode(nData, 'U');
+				 sendCode(nData, 'A');
+				 sendCode(nData, 'T');
+				 sendCode(nData, 'R');
+				 sendCode(nData, 'I');
+				 sendCode(nData, 'M');
+				 sendCode(nData, 'E');
+				 sendCode(nData, 'S');
+				 sendCode(nData, 'T');
+				 sendCode(nData, 'R');
+				 sendCode(nData, 'E');
+			 }
+		}
+	return 0;
 }
-return 0;
+
+
+void caracter(char arreglo[])
+{
+	
+int i = 0;
+for(i = 0;i < 5; i++)
+{
+sendCode(nData, arreglo[i]);
+	}
 }
 
 
-
-void configurarPuertos(void) {
-//Turn on clock for portb
-	
+void configurarPuertos(void){
+//Turn on clock for portC
 SIM_SCGC5 = SIM_SCGC5_PORTB_MASK;
-SIM_SCGC5 |= SIM_SCGC5_PORTD_MASK;
-SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK;
 SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
-SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
-
-/* Set pins of PORTB as GPIO */
-	//PORT B
-PORTB_PCR0 = PORT_PCR_MUX(1);    //ENABLE
-PORTB_PCR1 = PORT_PCR_MUX(1);    //RS
-
-//PORT E
-PORTE_PCR0 = PORT_PCR_MUX(1);    //CLOCK
-PORTE_PCR1 = PORT_PCR_MUX(1);    //DATA
-
-//PORT D
-PORTD_PCR0 = PORT_PCR_MUX(1);
-PORTD_PCR1 = PORT_PCR_MUX(1);
-PORTD_PCR2 = PORT_PCR_MUX(1);
-PORTD_PCR3 = PORT_PCR_MUX(1);
-PORTD_PCR4 = PORT_PCR_MUX(1);
-PORTD_PCR5 = PORT_PCR_MUX(1);
-PORTD_PCR6 = PORT_PCR_MUX(1);
-PORTD_PCR7 = PORT_PCR_MUX(1);
-
-//Portc
-//Set PTC1 as RTC_CLKIN - check pinouts table
-PORTC_PCR1 |= PORT_PCR_MUX(1);
-
-//Set PTC3 as RTC_CLKOUT - check pinouts table
-PORTC_PCR3 |= PORT_PCR_MUX(5);
-
-//Initialize PortB and PortD and PortE
-GPIOB_PDOR = 0x00;
-GPIOD_PDOR = 0x00;
-GPIOE_PDOR = 0x00;
-
-//Configure Port as outputs input 0, output 1	
-GPIOD_PDDR = 0xFFFF;
-GPIOB_PDDR = 0xFF;
-GPIOE_PDDR = 0xF0;
-GPIOC_PDDR = 0x00;
-}
-
-void initLCD(void) {
-sendCode(nIns, 0x38);
-sendCode(nIns, 0x38);
-sendCode(nIns, 0x38);
-sendCode(nIns, 0x0C);
-sendCode(nIns, 0x01);
-}
-
-void delay(long time) {
-	while (time > 0) {
-		time--;
-	}
-}
-
-void sendCode(int code, int data) {
-	RS_0;
-	Enable_0;
-	Port_LCD = data;
-	if (code == nIns) {
-		Enable_1;
-		delay(nt40_usec);
-		Enable_0;
-	}
-
-	if (code == nData) {
-		RS_1;
-		Enable_1;
-		delay(nt40_usec);
-		Enable_0;
-	}
-}
-
-
-void cfgClock(void) {	//Configure 32 KHz output
-// Add cfg of Clock Source Select
-//Enable internal reference clock - page 372
-	MCG_C1 = MCG_C1_IRCLKEN_MASK;
-	//MCG_C1 |= MCG_C1 | MCG_C1_IRCLKEN_MASK; 
-
-	//Internal Reference Clock -->Slow - page 373
-	MCG_C2 &= ~(MCG_C2_IRCS_MASK);  //Internal Reference Clock -->Slow
-
-	//Selects the 32 kHz clock source as RTC_CLKIN - page 194
-	SIM_SOPT1 = SIM_SOPT1_OSC32KSEL(2);
-
-	// Selects the clock to output on the CLKOUT pin as MCGIRCLK (32 Khz) - page 196
-	SIM_SOPT2 |= SIM_SOPT2_CLKOUTSEL(4);
-}
-
-void initRTC(void) {
-	//Enable the clock to RTC module register space - page 208
-	//Hint: Check if this register was initialized before
-	SIM_SCGC6 |= SIM_SCGC6_RTC_MASK;
-
-	//Clear Registers
-	//First, clear all RTC registers - page 603
-	RTC_CR = RTC_CR_SWR_MASK;
-	//Clear SWR bit
-	//Send 0 to SWR bit
-	RTC_CR &= ~RTC_CR_SWR_MASK;
-
-	if (RTC_SR_TIF_MASK) {
-		// This action clears the TIF. Remember:
-		// This bit is cleared by writing the TSR register when the time counter is disabled
-		// page 604
-		RTC_TSR = 0;
-	}
-
-	// Set time compensation parameters (not strictly required) - page 600
-	RTC_TCR = RTC_TCR_CIR(1);
-	RTC_TCR |= RTC_TCR_TCR(255);
-
-	// Enable RTC seconds irq - page 53 (remember modulus explanation)   
-	// Interrupt Clear-pending Register - Manual 2 page 112
-	NVIC_ICPR |= 1 << (21 % 32);
-
-	// Interrupt Set-enable Register
-	// Interrupt Clear-pending Register - Manual 2 page 110
-	NVIC_ISER |= 1 << (21 % 32);
-
-	// Enable Seconds Interrupt - page 606
-	RTC_IER |= RTC_IER_TSIE_MASK;
-
-	// Time counter is enabled. This actions starts RTC counting - page 603
-	RTC_SR |= RTC_SR_TCE_MASK;
-
-	// Configure the timer seconds and alarm registers - page 599
-	RTC_TSR = 0xFF;
-
-}
-
-void RTC_Seconds_IRQHandler(void) {
-	int cant = 0;
-	cant = count(dife);
-	sendCode(nIns, 0x86);
-	if(cant == 0){
-		sendCode(nData, '0');				
-	} else {
-		imprimeNum(cant, dife);
-	}
-}
-
-void iniTimer(void){
-	 // turn on PIT
-	PIT_MCR = PIT_MCR_FRZ_MASK; 	
-	// Timer 1
-	//PIT_LDVAL1 = 0x4DE18; //30 MS 
-	PIT_LDVAL1 = 0x19A00;// 100 ms 
-	PIT_TCTRL1 = PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK;
 	
-	NVIC_ICPR |= 1 << ((INT_PIT - 16) % 32);
+	
+/* Set pins */
 
-	NVIC_ISER |= 1 << ((INT_PIT - 16) % 32);
+//PORT B
+PORTB_PCR0 = PORT_PCR_MUX(1);     //E
+PORTB_PCR1 = PORT_PCR_MUX(1);     //RS
+
+//Button
+PORTB_PCR2 = PORT_PCR_MUX(1);    //b
+	
+
+//PORT C
+PORTC_PCR0 = PORT_PCR_MUX(1);
+PORTC_PCR1 = PORT_PCR_MUX(1);
+PORTC_PCR2 = PORT_PCR_MUX(1);
+PORTC_PCR3 = PORT_PCR_MUX(1);
+PORTC_PCR4 = PORT_PCR_MUX(1);
+PORTC_PCR5 = PORT_PCR_MUX(1);
+PORTC_PCR6 = PORT_PCR_MUX(1);
+PORTC_PCR7 = PORT_PCR_MUX(1);
+	
+	
+
+//Initialize PortB and Portc
+GPIOB_PDOR = 0x00;
+GPIOC_PDOR = 0x00;
+		
+//Configurar de salida los puertos
+GPIOB_PDDR = 0xFF;
+GPIOC_PDDR = 0xFFFF;
+
 }
 
-void PIT_IRQHandler(void){
-	dife++;
-	PIT_TFLG1 |= PIT_TFLG_TIF_MASK;     // Clear the timer interrupt flag 
 
-	PIT_TCTRL1 |= PIT_TCTRL_TEN_MASK | PIT_TCTRL_TIE_MASK;
+
+void initLCD(void){
+sendCode(nInst, 0x38);
+sendCode(nInst, 0x38);
+sendCode(nInst, 0x38);
+sendCode(nInst, 0x0C);
+sendCode(nInst, 0x01);
 }
 
-int count(int x){
-	int res = 0;
-	 while (x > 0) {
-	 res++;
-	 x /= 10;
+
+
+void delay(long time)
+{
+  while (time > 0)
+    {
+ time--;
+}
+ }
+
+
+void sendCode(int code, int PortData)
+{
+	PortRS_0;
+	PortEnable_0;
+	
+	Port_LCD = PortData;
+
+	if(code == nInst)
+ {
+		PortRS_0;
+		PortEnable_1;
+		delay (ntime_40usec);
+		PortEnable_0;
+		PortRS_0;
 	}
-	return res;
-}
-
-void imprimeNum(int x, int y){
-	char numero[x];
-	int pos = 0;
-	int digit = 0;
-	int z = 0;
-	if(x == 1){
-		numero[pos] = (char)(((int)'0')+y);
-		sendCode(nData, numero[0]);
-	} else {
-		while(y > 0){
-			digit = y % 10;
-			numero[pos] = (char)(((int)'0')+digit);
-			pos++;
-			y /= 10;
-		}
-		for(z = x-1; z > -1; z--){
-			sendCode(nData, numero[z]);
-						
-		}
+	else if (code == nData)
+	{
+		PortRS_1;
+		PortEnable_1;
+		delay(ntime_40usec);		
+		PortEnable_0;
+		PortRS_0;
 	}
 }
 
+void clear(void){
+	sendCode(nInst, 0x01);
+}
+
+void vfnPulseInInit(void)
+{
+	GPIOB_PDDR &= ~( 1 << PULSE_INPUT );
+	PORTB_PCR2  =  PORT_PCR_MUX(1) | PORT_PCR_PE_MASK ;	
+}
+//
+
+unsigned char bfnGetPulseMeas(void)
+{
+	while (( PULSE_IN_PORT & ( 1 << PULSE_INPUT)) );
+		while (( PULSE_IN_PORT & ( 1 << PULSE_INPUT) ));
+		do
+		{
+			bPulseWidth++;
+		}while ( PULSE_IN_PORT & ( 1 << PULSE_INPUT) );
+		return ( bPulseWidth );
+}
